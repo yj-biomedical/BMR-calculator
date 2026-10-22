@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="description" content="Offline Fine-Gray competing-risk calculator for beyond-Milan recurrence at 1, 2 and 3 years. Research use only." />
+<title>BMR Prediction | Fine-Gray Calculator</title>
+<style>
+  :root {
+    --ink:#142741; --slate:#52677f; --blue:#1d669c; --navy:#112844;
+    --muted:#73879d; --line:#dae3eb; --light:#f4f7fa; --white:#fff;
+    --teal:#52c9c5; --high:#a43b36; --high-bg:#fff2f0;
+    --low:#206755; --low-bg:#e8f5ef;
+    --shadow: 0 18px 50px rgba(17,40,68,.07);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f6f8fa;font-size:15px;line-height:1.55}
+  button,input{font:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:3px solid #3c8fcc;outline-offset:3px}
+  .topband{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+  .topband::after{content:"";position:absolute;inset:auto -80px -200px auto;width:450px;height:390px;border:85px solid rgba(98,197,210,.08);border-radius:50%;pointer-events:none}
+  .wrap{max-width:1130px;margin:0 auto;padding:0 24px}
+  header .wrap{padding-top:27px;padding-bottom:43px;position:relative;z-index:1}
+  .eyebrowline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+  .eyebrow{font-weight:800;letter-spacing:.085em;font-size:10px;border-radius:999px;background:#83d8dc;color:#09384c;padding:8px 13px}
+  .eyebrow-outline{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#d3e2ef}
+  .hero{display:flex;justify-content:space-between;align-items:end;gap:20px}
+  h1{font-size:clamp(27px,4vw,39px);letter-spacing:-.04em;line-height:1.14;margin:0 0 9px;font-weight:750}
+  .subhead{margin:0;color:#cedce8;font-size:16px}
+  .header-aside{text-align:right;flex-shrink:0;color:#bed1e0;font-size:12px;line-height:1.8}
+  .header-aside strong{color:#fff;display:block;font-size:16px;font-variant-numeric:tabular-nums}
+  main.wrap{padding-top:30px;padding-bottom:34px}
+  .layout{display:grid;grid-template-columns:minmax(0,1.17fr) minmax(340px,.83fr);gap:24px;align-items:start}
+  .panel{background:#fff;border:1px solid #e5ebf0;border-radius:17px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-pad{padding:26px 29px 29px}
+  .section-line{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:7px}
+  .step{display:inline-grid;place-items:center;border-radius:8px;background:#e5f0f7;color:var(--blue);font-weight:800;width:29px;height:29px;font-size:14px;flex-shrink:0}
+  h2{font-size:19px;letter-spacing:-.02em;margin:0;font-weight:750}
+  .section-heading{display:flex;align-items:center;gap:11px}
+  .progress{font-size:12px;color:var(--slate);font-weight:650;font-variant-numeric:tabular-nums}
+  .intro{margin:10px 0 21px;color:var(--slate);font-size:13px;max-width:540px}
+  .input-list{display:grid;gap:11px}
+  .input-row{display:grid;grid-template-columns:minmax(0,1fr) 154px;gap:16px;align-items:center;padding:14px 15px;border:1px solid #e6edf2;background:#fff;border-radius:10px;transition:border-color .12s,background .12s}
+  .input-row:nth-child(odd){background:#f8fafc}
+  .input-row:focus-within{border-color:#81b8d7}
+  .varname{font-size:13.5px;font-weight:750;line-height:1.3}
+  .varcode{font-size:11.5px;color:var(--slate);margin-top:5px;line-height:1.35}
+  .switch{display:grid;grid-template-columns:1fr 1fr;padding:3px;gap:4px;border:1px solid #dce6ee;border-radius:9px;background:#eef3f7;position:relative}
+  .switch label{min-width:0;cursor:pointer;text-align:center;position:relative}
+  .switch input{position:absolute;opacity:0;width:1px;height:1px}
+  .switch span{display:block;padding:10px 0;border-radius:6px;font-size:13px;font-weight:700;color:#516982;transition:background .13s,box-shadow .13s,color .13s}
+  .switch input:checked+span{background:var(--navy);color:#fff;box-shadow:0 2px 5px rgba(17,40,68,.18)}
+  .switch input:focus-visible+span{outline:3px solid #3c8fcc;outline-offset:1px}
+  .switch input:not(:checked)+span:hover{color:var(--blue);background:#e1ebf2}
+  .actions{display:flex;gap:9px;margin-top:18px}
+  .primary{background:var(--blue);border:1px solid var(--blue);color:#fff;padding:13px 15px;min-height:48px;border-radius:9px;font-weight:750;font-size:13px;letter-spacing:.035em;flex:1;transition:background .15s}
+  .primary:hover{background:#124e7b}
+  .secondary{background:#fff;color:var(--slate);border:1px solid #d5e0e9;border-radius:9px;padding:13px 19px;font-size:13px;font-weight:700}
+  .secondary:hover{background:#f0f5f8}
+  .local-note{text-align:center;color:var(--muted);font-size:11.5px;margin:14px 0 0}
+  .error-msg{font-size:12px;color:#a43836;margin:10px 0 0;min-height:0}
+  .result-panel{position:sticky;top:18px}
+  .target{font-size:11px;font-weight:750;letter-spacing:.08em;color:var(--blue);text-transform:uppercase;margin:4px 0 5px}
+  .result-sub{margin:9px 0 20px;font-size:13px;color:var(--slate)}
+  .results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:19px}
+  .result{background:#f0f5f8;border:1px solid #e5edf3;border-radius:11px;padding:16px 11px 17px;min-width:0}
+  .result .caption{font-size:10px;font-weight:800;letter-spacing:.075em;color:#4a637d}
+  .result .value{margin-top:17px;font-size:clamp(20px,2.2vw,29px);font-weight:800;letter-spacing:-.04em;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .result .value.empty{color:#a5b9c9}
+  .score-strip{border:1px solid #e4ebf1;background:#fff;border-radius:10px;padding:13px 15px;margin-bottom:13px}
+  .stat{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0;font-size:12px}
+  .stat+.stat{border-top:1px solid #e7edf2}
+  .stat-label{color:#536a81;font-weight:650}
+  .stat-value{font-weight:800;font-variant-numeric:tabular-nums}
+  .stratum{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:800;background:#eaf0f5;color:#6a7d91;min-width:77px;justify-content:center}
+  .stratum.high{color:var(--high);background:var(--high-bg)}
+  .stratum.low{color:var(--low);background:var(--low-bg)}
+  .stratum::before{content:"";width:6px;height:6px;background:currentColor;border-radius:50%;margin-right:7px}
+  .interp{margin-top:21px;border-top:1px solid var(--line);padding-top:17px}
+  .interp h3{font-size:13px;margin:0 0 8px}
+  .interp p{margin:0 0 8px;color:var(--slate);font-size:11.8px}
+  .result-actions{display:flex;gap:9px;margin-top:18px}
+  .result-actions .secondary{flex:1;padding:10px;font-size:11.5px}
+  .result-actions .secondary:disabled{opacity:.46;cursor:not-allowed}
+  footer{background:#eaf0f5;border-top:1px solid #dae4ed;color:#425d76;padding:20px 0 26px;margin-top:12px}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px}
+  footer strong{font-size:12px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase}
+  footer p{margin:5px 0 0;font-size:11.5px;max-width:800px}
+  .foot-note{font-size:11px;color:#60768a;white-space:nowrap}
+  @media (max-width: 850px){.layout{grid-template-columns:1fr}.result-panel{position:static}.header-aside{display:none}.wrap{padding:0 18px}}
+  @media (max-width: 490px){header .wrap{padding-top:21px;padding-bottom:29px}.panel-pad{padding:20px 17px}.layout{gap:16px}main.wrap{padding-top:18px}.input-row{grid-template-columns:minmax(0,1fr) 116px;gap:10px;padding:12px 11px}.varname{font-size:12.5px}.varcode{font-size:10.5px}.result{padding:14px 6px}.result .value{font-size:19px}.results{gap:5px}footer .wrap{align-items:flex-start;flex-direction:column}.section-line{align-items:flex-start}.progress{white-space:nowrap}}
+  @media print{body{background:#fff}.topband,footer{print-color-adjust:exact;-webkit-print-color-adjust:exact}.wrap{max-width:100%}header .wrap{padding-bottom:18px;padding-top:18px}.layout{display:block}.panel{box-shadow:none;border-color:#c9d6e0;margin-bottom:15px;break-inside:avoid}.result-panel{position:static}.panel-pad{padding:16px 20px}.input-row{padding:8px}.actions,.result-actions,.local-note{display:none}.result{background:#eef3f6}footer{padding:9px 0}main.wrap{padding-top:12px}h1{font-size:27px}}
+</style>
+</head>
+<body>
+<header class="topband">
+  <div class="wrap">
+    <div class="eyebrowline"><span class="eyebrow">RESEARCH CALCULATOR</span><span class="eyebrow eyebrow-outline">FINE-GRAY COMPETING RISKS</span></div>
+    <div class="hero"><div><h1>Beyond-Milan Recurrence</h1><p class="subhead">Individualized 1-, 2-, and 3-year risk prediction</p></div><div class="header-aside">PREDICTION HORIZONS<strong>1 / 2 / 3 YEARS</strong></div></div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="layout">
+    <section class="panel" aria-labelledby="inputs-heading">
+      <div class="panel-pad">
+        <div class="section-line"><div class="section-heading"><span class="step">1</span><h2 id="inputs-heading">Enter imaging predictors</h2></div><span class="progress" id="progress">0 of 5 selected</span></div>
+        <p class="intro">Enter the five original binary variables (0 or 1). Use the original dataset coding. No patient identifiers are required.</p>
+        <form id="predictor-form" autocomplete="off" novalidate>
+          <div class="input-list">
+            <div class="input-row" data-name="Tumor_capsule"><div><div class="varname">Tumor capsule</div><div class="varcode">1 = incomplete or absent capsule</div></div><div class="switch" role="radiogroup" aria-label="Tumor capsule"><label><input type="radio" name="Tumor_capsule" value="0" /><span>0</span></label><label><input type="radio" name="Tumor_capsule" value="1" /><span>1</span></label></div></div>
+            <div class="input-row" data-name="Rim_APHE"><div><div class="varname">Rim APHE</div><div class="varcode">1 = rim arterial phase hyperenhancement</div></div><div class="switch" role="radiogroup" aria-label="Rim APHE"><label><input type="radio" name="Rim_APHE" value="0" /><span>0</span></label><label><input type="radio" name="Rim_APHE" value="1" /><span>1</span></label></div></div>
+            <div class="input-row" data-name="Intratumoral_artery"><div><div class="varname">Intratumoral artery</div><div class="varcode">1 = intratumoral artery present</div></div><div class="switch" role="radiogroup" aria-label="Intratumoral artery"><label><input type="radio" name="Intratumoral_artery" value="0" /><span>0</span></label><label><input type="radio" name="Intratumoral_artery" value="1" /><span>1</span></label></div></div>
+            <div class="input-row" data-name="Intratumoral_hemorrhage"><div><div class="varname">Intratumoral hemorrhage</div><div class="varcode">1 = intratumoral hemorrhage present</div></div><div class="switch" role="radiogroup" aria-label="Intratumoral hemorrhage"><label><input type="radio" name="Intratumoral_hemorrhage" value="0" /><span>0</span></label><label><input type="radio" name="Intratumoral_hemorrhage" value="1" /><span>1</span></label></div></div>
+            <div class="input-row" data-name="Satellite_nodules_img"><div><div class="varname">Satellite nodules (imaging)</div><div class="varcode">1 = satellite nodules present</div></div><div class="switch" role="radiogroup" aria-label="Satellite nodules imaging"><label><input type="radio" name="Satellite_nodules_img" value="0" /><span>0</span></label><label><input type="radio" name="Satellite_nodules_img" value="1" /><span>1</span></label></div></div>
+          </div>
+          <div class="actions"><button class="primary" id="calculate" type="submit">CALCULATE BMR PROBABILITY</button><button class="secondary" id="reset" type="reset">Reset</button></div>
+          <p id="validation" class="error-msg" role="alert" aria-live="polite"></p>
+        </form>
+        <p class="local-note">Calculated entirely in your browser · No data transmitted</p>
+      </div>
+    </section>
+    <section class="panel result-panel" aria-labelledby="results-heading">
+      <div class="panel-pad">
+        <div class="section-line"><div class="section-heading"><span class="step">2</span><h2 id="results-heading">Prediction results</h2></div></div>
+        <p class="result-sub">Absolute cumulative incidence of beyond-Milan recurrence, accounting for competing outcomes.</p>
+        <div class="results" id="result-cards" aria-live="polite" aria-atomic="true">
+          <div class="result"><div class="caption">1-YEAR</div><div class="value empty" id="risk1">--</div></div>
+          <div class="result"><div class="caption">2-YEAR</div><div class="value empty" id="risk2">--</div></div>
+          <div class="result"><div class="caption">3-YEAR</div><div class="value empty" id="risk3">--</div></div>
+        </div>
+        <div class="score-strip"><div class="stat"><span class="stat-label">BMR score</span><span class="stat-value" id="risk-score">--</span></div><div class="stat"><span class="stat-label">Risk stratum</span><span class="stratum" id="risk-group">--</span></div><div class="stat"><span class="stat-label">Risk-score cutoff (rounded)</span><span class="stat-value">2.369</span></div></div>
+        <div class="interp"><h3>How to interpret the result</h3><p>Predicted percentages estimate the probability of beyond-Milan recurrence by the stated time, not the probability of recurrence exactly at that time.</p><p>These are individual model predictions, not confidence intervals. Risk categories are exploratory and should not be used alone for clinical decisions.</p></div>
+        <div class="result-actions"><button class="secondary" id="copy" type="button" disabled>Copy results</button><button class="secondary" id="print" type="button" disabled>Print / Save PDF</button></div>
+        <p id="copy-status" class="local-note" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </div>
+</main>
+<footer><div class="wrap"><strong>FOR RESEARCH USE ONLY</strong></div></footer>
+<script>
+"use strict";
+// Verified directly against the original locked model's 32 input combinations.
+// Values: [1y %, 2y %, 3y %, original risk score, original risk group].
+const LOOKUP = {"00000":[1.4725616692825545,2.4748848771813963,2.8054804425176663,0.0,"Low risk"],"00001":[4.01722803960623,6.691765299566825,7.563350557146249,1.0953844861245128,"Low risk"],"00010":[2.9065619850673676,4.86058516801727,5.500748698741929,0.7405251692205359,"Low risk"],"00011":[7.828801568722101,12.865042771809222,14.475877614926036,1.8359096553450487,"Low risk"],"00100":[3.0134086696375335,5.037376668446938,5.700119185116333,0.7800136733216386,"Low risk"],"00101":[8.108863026908203,13.311818809039142,14.973639071923097,1.8753981594461515,"Low risk"],"00110":[5.902279334992522,9.766367042855437,11.014147634999008,1.5205388425421744,"Low risk"],"00111":[15.476473595539275,24.72569317432627,27.56763406639349,2.615923328666687,"High risk"],"01000":[4.076428528167714,6.788962584827778,7.672679210847826,1.1114772683322407,"Low risk"],"01001":[10.865663213645334,17.65950556844776,19.79909292287612,2.2068617544567535,"Low risk"],"01010":[7.941800112211606,13.045419693483543,14.676880609947851,1.8520024375527766,"Low risk"],"01011":[20.443541050680945,32.04588232427486,35.51163256862536,2.947386923677289,"High risk"],"01100":[8.225720807477533,13.497962356900779,15.180922588339687,1.8914909416538794,"Low risk"],"01101":[21.11983670364372,33.018844846054115,36.55906203322825,2.986875427778392,"High risk"],"01110":[15.690056560836702,25.046727738562787,27.918303849243166,2.632016110874415,"High risk"],"01111":[37.605985728137114,54.92406498222522,59.537285615152946,3.727400596998928,"High risk"],"10000":[6.276163986819805,10.371187012421293,11.691114328362284,1.5888408779877168,"Low risk"],"10001":[16.40143091920986,26.1119462257964,29.08039265525204,2.68422536411223,"High risk"],"10010":[12.091681997157488,19.56362213077124,21.901709648220425,2.3293660472082527,"Low risk"],"10011":[29.965931335271723,45.21161549849098,49.501165218085475,3.4247505333327655,"High risk"],"10100":[12.513571100345434,20.214644763924696,22.619062202465585,2.3688545513093553,"High risk"],"10101":[30.89094134732954,46.4284625290698,50.77278402945959,3.464239037433868,"High risk"],"10110":[23.34125325777382,36.17429434049427,39.94171056614548,3.1093797205298914,"High risk"],"10111":[52.03214751872293,71.09023529331688,75.56472265792534,4.204764206654404,"High risk"],"11000":[16.626482415226597,26.44764407562211,29.446150022634406,2.7003181463199573,"High risk"],"11001":[39.502618199379356,57.21435916478117,61.863596696938,3.7957026324444705,"High risk"],"11010":[30.340293800406027,45.70543097273698,50.01767421776305,3.4408433155404934,"High risk"],"11011":[63.18449528170733,81.51086844440583,85.29092702510171,4.536227801665007,"High risk"],"11100":[31.274110775796327,46.92924990459164,51.29498173707753,3.480331819641596,"High risk"],"11101":[64.5324403157805,82.63992666572902,86.30656345689064,4.575716305766109,"High risk"],"11110":[52.55948985132745,71.62508403770238,76.07739794440279,4.220856988862132,"High risk"],"11111":[87.26679680172377,96.92380397947144,98.08069847188165,5.3162414749866445,"High risk"]};
+const VARIABLES = ["Tumor_capsule","Rim_APHE","Intratumoral_artery","Intratumoral_hemorrhage","Satellite_nodules_img"];
+const form=document.getElementById('predictor-form');
+const progress=document.getElementById('progress');
+const validation=document.getElementById('validation');
+const riskValues=[1,2,3].map(i=>document.getElementById('risk'+i));
+const scoreEl=document.getElementById('risk-score');
+const groupEl=document.getElementById('risk-group');
+const copyButton=document.getElementById('copy');
+const printButton=document.getElementById('print');
+const copyStatus=document.getElementById('copy-status');
+let lastResult=null;
+function selection(){return VARIABLES.map(n=>form.querySelector('input[name="'+n+'"]:checked')?.value??null)}
+function refreshProgress(){const n=selection().filter(v=>v!==null).length;progress.textContent=n+' of 5 selected';}
+function clearResult(){riskValues.forEach(x=>{x.textContent='--';x.classList.add('empty')});scoreEl.textContent='--';groupEl.textContent='--';groupEl.className='stratum';copyButton.disabled=true;printButton.disabled=true;lastResult=null;copyStatus.textContent='';}
+function calculate(){
+  const values=selection(); const missing=values.indexOf(null);
+  if(missing!==-1){validation.textContent='Please select 0 or 1 for all five predictors.';const n=VARIABLES[missing];form.querySelector('input[name="'+n+'"]')?.focus();return;}
+  validation.textContent='';const key=values.join('');const entry=LOOKUP[key];
+  if(!entry){validation.textContent='This combination was not found. Please check the inputs.';clearResult();return;}
+  const [p1,p2,p3,s,group]=entry;
+  [p1,p2,p3].forEach((v,i)=>{riskValues[i].textContent=v.toFixed(2)+'%';riskValues[i].classList.remove('empty')});
+  scoreEl.textContent=s.toFixed(4);
+  groupEl.textContent=group;
+  groupEl.className='stratum '+(group==='High risk'?'high':'low');
+  lastResult={values,risks:[p1,p2,p3],score:s,group};copyButton.disabled=false;printButton.disabled=false;
+}
+form.addEventListener('submit',e=>{e.preventDefault();calculate();});
+form.addEventListener('change',()=>{refreshProgress();validation.textContent='';if(lastResult){clearResult();if(selection().every(x=>x!==null))calculate();}});
+form.addEventListener('reset',()=>{progress.textContent='0 of 5 selected';clearResult();validation.textContent='';});
+copyButton.addEventListener('click',async()=>{
+  if(!lastResult)return;
+  const r=lastResult;
+  const lines=['Beyond-Milan Recurrence prediction',...VARIABLES.map((n,i)=>n+': '+r.values[i]),'1-year BMR: '+r.risks[0].toFixed(2)+'%','2-year BMR: '+r.risks[1].toFixed(2)+'%','3-year BMR: '+r.risks[2].toFixed(2)+'%','BMR score: '+r.score.toFixed(4),'Risk stratum: '+r.group,'Cutoff (rounded): 2.369','For Research Use Only'];
+  try{await navigator.clipboard.writeText(lines.join('\n'));copyStatus.textContent='Results copied.';}catch(_){copyStatus.textContent='Copy is unavailable in this browser. Select the displayed values instead.';}
+});
+printButton.addEventListener('click',()=>{if(lastResult)window.print();});
+refreshProgress();
+</script>
+</body>
+</html>
